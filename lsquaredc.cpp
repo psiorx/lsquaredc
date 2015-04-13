@@ -36,7 +36,7 @@
 
 #define DEVICE_NAME_LENGTH 11   /* example: "/dev/i2c-1" + the terminating 0 */
 
-static uint32_t check_i2c_functionality(handle) {
+static uint32_t check_i2c_functionality(int handle) {
   unsigned long funcs;
   if(ioctl(handle, I2C_FUNCS, &funcs) < 0) {
     return 0;
@@ -99,12 +99,12 @@ static uint32_t count_segments(uint16_t *sequence, uint32_t sequence_length) {
 int i2c_send_sequence(int handle, uint16_t *sequence, uint32_t sequence_length, uint8_t *received_data) {
   struct i2c_rdwr_ioctl_data message_sequence;
   uint32_t number_of_segments = count_segments(sequence, sequence_length);
-  struct i2c_msg *messages = malloc(number_of_segments * sizeof(struct i2c_msg));
+  struct i2c_msg *messages = (i2c_msg*)malloc(number_of_segments * sizeof(struct i2c_msg));
   struct i2c_msg *current_message = messages;
   /* msg_buf needs to hold all *bytes written* in the entire sequence. Since it is difficult to estimate that number
      without processing the sequence, we make an upper-bound guess: sequence_length. Yes, this is inefficient, but
      optimizing this doesn't seem to be worth the effort. */
-  uint8_t *msg_buf = malloc(sequence_length); /* certainly no more than that */
+  uint8_t *msg_buf = (uint8_t*)malloc(sequence_length); /* certainly no more than that */
   uint8_t *msg_cur_buf_ptr = msg_buf;
   uint8_t *msg_cur_buf_base;
   uint32_t msg_cur_buf_size;
